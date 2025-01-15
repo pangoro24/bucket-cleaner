@@ -6,7 +6,8 @@ s3 = boto3.client('s3')
 
 def download_bucket(bucket_name, download_path):
     """
-    Descarga todos los archivos de un bucket S3 a una carpeta local.
+    Descarga todos los archivos de un bucket S3 a una carpeta local,
+    creando las carpetas necesarias.
     """
     if not os.path.exists(download_path):
         os.makedirs(download_path)
@@ -18,9 +19,17 @@ def download_bucket(bucket_name, download_path):
 
     count = 0
     for obj in objects['Contents']:
-        file_name = os.path.join(download_path, obj['Key'])
-        s3.download_file(bucket_name, obj['Key'], file_name)
-        print(f"Descargado: {obj['Key']}")
+        key = obj['Key']
+        local_file_path = os.path.join(download_path, key)
+
+        # Crea directorios si no existen
+        local_dir = os.path.dirname(local_file_path)
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
+
+        # Descarga el archivo
+        s3.download_file(bucket_name, key, local_file_path)
+        print(f"Descargado: {key}")
         count += 1
 
     print(f"\nTotal de objetos descargados: {count}")
